@@ -1,0 +1,70 @@
+/**  * 수정하기 전 첫번째 파일  */
+
+
+//import { invoice } from './data.js'
+//import { plays } from './data.js'
+
+console.log("statement ver 1\n\n")
+
+const invoice = require('./invoice.json');
+const plays = require('./plays.json')
+
+console.log(invoice);
+console.log(plays);
+
+var result = statement(invoice, plays);
+console.log(result) ;
+
+function statement(invoice, plays) {
+    let totalAmount = 0;
+    let volumeCredits = 0;
+    let result = `청구내역(고객명:${invoice[0].customer})\n`;
+
+    const format = new Intl.NumberFormat("en-US", {
+        style: "currency", currency: "USD",
+        minimumFractionDigits: 2
+    }).format;
+
+
+    for (let perf of invoice[0].performances) {
+        const play = plays[perf.playID];
+        let thisAmount = 0;        
+
+        switch (play.type) {
+            case "tragedy":
+                thisAmount = 40000;
+                if (perf.audience > 30) {
+                    thisAmount += 1000 * (perf.audience - 30);
+                }
+                break;
+            case "comedy":
+                thisAmount = 30000;
+                if (perf.audience > 20) {
+                    thisAmount += 500 * (perf.audience - 20);
+                }
+                break;
+            default:
+                throw new Error(`알 수 없는 장르 : ${play.type}`);
+        }
+
+        volumeCredits += Math.max(perf.audience - 30, 0);
+
+        if ("comedy" === play.type) volumeCredits += Math.floor(perf.audience / 5);
+
+        result += `${play.name} : ${format(thisAmount / 100)} (${perf.audience}석) \n`;
+        totalAmount += thisAmount;
+    }
+
+    result += `총액: ${format(totalAmount / 100)}\n`
+    result += `적립 포인트: ${volumeCredits}점\n`
+
+    return result;
+}
+
+
+
+
+
+
+
+
